@@ -1,14 +1,11 @@
 use std::{
     fs::{File, OpenOptions},
     io::{Read, Write},
+    str::FromStr,
 };
 
 use clap::Parser;
-use pngme::{
-    Png,
-    chunk::PngChunk,
-    chunk_type::{PngChunkType, PngChunkTypeBinaryData},
-};
+use pngme::{Png, chunk::PngChunk, chunk_type::PngChunkType};
 
 /// PNG message encoder
 #[derive(Parser, Debug)]
@@ -88,16 +85,14 @@ fn handle_encode_command(
     message: String,
     output_file_path: Option<String>,
 ) -> anyhow::Result<()> {
+    let chunk_type = PngChunkType::from_str(&chunk_type)?;
+
     let mut file = File::open(&file_path)?;
     let mut png = create_png_from_file_bytes(&mut file)?;
 
     png.remove_first_chunk(&chunk_type).ok();
 
-    let chunk_type_bytes: PngChunkTypeBinaryData = chunk_type.as_bytes().try_into().unwrap();
-    png.append_chunk(PngChunk::new(
-        PngChunkType::try_from(chunk_type_bytes)?,
-        message.as_bytes().to_vec(),
-    ));
+    png.append_chunk(PngChunk::new(chunk_type, message.as_bytes().to_vec()));
 
     let (mut write_target_file, write_target_file_path) = match output_file_path {
         Some(alt_path) => (open_file_for_rewrite(&alt_path)?, alt_path),
@@ -112,6 +107,8 @@ fn handle_encode_command(
 }
 
 fn handle_decode_command(file_path: String, chunk_type: String) -> anyhow::Result<()> {
+    let chunk_type = PngChunkType::from_str(&chunk_type)?;
+
     let mut file = File::open(file_path)?;
     let png = create_png_from_file_bytes(&mut file)?;
 
@@ -129,6 +126,8 @@ fn handle_decode_command(file_path: String, chunk_type: String) -> anyhow::Resul
 }
 
 fn handle_remove_command(file_path: String, chunk_type: String) -> anyhow::Result<()> {
+    let chunk_type = PngChunkType::from_str(&chunk_type)?;
+
     let mut file = File::open(&file_path)?;
     let mut png = create_png_from_file_bytes(&mut file)?;
 

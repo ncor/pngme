@@ -11,7 +11,7 @@ pub type PngChunkTypeBinaryData = [u8; PNG_CHUNK_TYPE_LENGTH];
 pub type PngChunkTypeData = [char; PNG_CHUNK_TYPE_LENGTH];
 
 #[derive(Debug, Eq, PartialEq)]
-pub struct PngChunkType(PngChunkTypeData);
+pub struct PngChunkType(pub PngChunkTypeData);
 
 #[derive(Error, Debug)]
 pub enum PngChunkTypeParsingError {

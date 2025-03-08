@@ -7,7 +7,7 @@ use chunk::{
     CRC_LENGTH, PNG_CHUNK_DATA_LENGTH_LENGTH, PNG_CHUNK_MINIMUM_LENGTH, PngChunk,
     PngChunkParsingError,
 };
-use chunk_type::PNG_CHUNK_TYPE_LENGTH;
+use chunk_type::{PNG_CHUNK_TYPE_LENGTH, PngChunkType};
 use thiserror::Error;
 
 const HEADER_LENGTH: usize = 8;
@@ -146,16 +146,17 @@ impl Png {
         self.chunks.push(chunk)
     }
 
-    pub fn chunk_index_by_type(&self, chunk_type: &str) -> Option<usize> {
-        let search_predicate = |chunk: &PngChunk| chunk.chunk_type.to_string() == chunk_type;
+    pub fn chunk_index_by_type(&self, chunk_type: &PngChunkType) -> Option<usize> {
+        let search_predicate = |chunk: &PngChunk| chunk.chunk_type.0 == chunk_type.0;
+
         self.chunks.iter().position(search_predicate)
     }
 
-    pub fn chunk_by_type(&self, chunk_type: &str) -> Option<&PngChunk> {
+    pub fn chunk_by_type(&self, chunk_type: &PngChunkType) -> Option<&PngChunk> {
         let maybe_chunk_index = self.chunk_index_by_type(chunk_type);
 
         if let Some(index) = maybe_chunk_index {
-            Some(self.chunks.get(index).unwrap())
+            self.chunks.get(index)
         } else {
             None
         }
@@ -163,7 +164,7 @@ impl Png {
 
     pub fn remove_first_chunk(
         &mut self,
-        chunk_type: &str,
+        chunk_type: &PngChunkType,
     ) -> Result<PngChunk, ChunkWithTypeNotFoundError> {
         let maybe_chunk_index = self.chunk_index_by_type(chunk_type);
 
@@ -183,6 +184,7 @@ mod tests {
     use super::chunk::PngChunk;
     use super::chunk_type::PngChunkType;
     use std::convert::TryFrom;
+    use std::str::FromStr;
 
     fn testing_chunks() -> Vec<PngChunk> {
         vec![
@@ -282,7 +284,9 @@ mod tests {
     #[test]
     fn test_chunk_by_type() {
         let png = testing_png();
-        let chunk = png.chunk_by_type("FrSt").unwrap();
+        let chunk = png
+            .chunk_by_type(&PngChunkType::from_str("FrSt").unwrap())
+            .unwrap();
         assert_eq!(&chunk.chunk_type.to_string(), "FrSt");
         assert_eq!(&chunk.data_as_string().unwrap(), "I am the first chunk");
     }
@@ -291,7 +295,9 @@ mod tests {
     fn test_append_chunk() {
         let mut png = testing_png();
         png.append_chunk(chunk_from_strings("TeSt", "Message").unwrap());
-        let chunk = png.chunk_by_type("TeSt").unwrap();
+        let chunk = png
+            .chunk_by_type(&PngChunkType::from_str("TeSt").unwrap())
+            .unwrap();
         assert_eq!(&chunk.chunk_type.to_string(), "TeSt");
         assert_eq!(&chunk.data_as_string().unwrap(), "Message");
     }
@@ -300,8 +306,9 @@ mod tests {
     fn test_remove_first_chunk() {
         let mut png = testing_png();
         png.append_chunk(chunk_from_strings("TeSt", "Message").unwrap());
-        png.remove_first_chunk("TeSt").unwrap();
-        let chunk = png.chunk_by_type("TeSt");
+        let test_chunk = &PngChunkType::from_str("TeSt").unwrap();
+        png.remove_first_chunk(test_chunk).unwrap();
+        let chunk = png.chunk_by_type(test_chunk);
         assert!(chunk.is_none());
     }
 
