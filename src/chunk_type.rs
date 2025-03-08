@@ -75,32 +75,32 @@ impl PngChunkType {
         self.0.map(|char| char as u8)
     }
 
-    pub fn is_valid_chars(&self) -> bool {
+    fn is_valid_chars(&self) -> bool {
         self.bytes().iter().all(|&byte| is_ascii_letter_byte(byte))
     }
 
     #[allow(unused)]
-    pub fn is_valid(&self) -> bool {
+    fn is_valid(&self) -> bool {
         self.0[2].is_uppercase() && self.is_valid_chars()
     }
 
     #[allow(unused)]
-    pub fn is_critical(&self) -> bool {
+    fn is_critical(&self) -> bool {
         self.0[0].is_uppercase()
     }
 
     #[allow(unused)]
-    pub fn is_public(&self) -> bool {
+    fn is_public(&self) -> bool {
         self.0[1].is_uppercase()
     }
 
     #[allow(unused)]
-    pub fn is_reserved_bit_valid(&self) -> bool {
+    fn is_reserved_bit_valid(&self) -> bool {
         self.0[2].is_uppercase()
     }
 
     #[allow(unused)]
-    pub fn is_safe_to_copy(&self) -> bool {
+    fn is_safe_to_copy(&self) -> bool {
         self.0[3].is_lowercase()
     }
 }

@@ -127,7 +127,7 @@ impl Png {
     pub const STANDARD_HEADER: Header = [137, 80, 78, 71, 13, 10, 26, 10];
 
     #[allow(unused)]
-    pub fn from_chunks(chunks: Vec<PngChunk>) -> Png {
+    fn from_chunks(chunks: Vec<PngChunk>) -> Png {
         Png {
             header: Png::STANDARD_HEADER,
             chunks,
@@ -146,7 +146,7 @@ impl Png {
         self.chunks.push(chunk)
     }
 
-    pub fn chunk_index_by_type(&self, chunk_type: &PngChunkType) -> Option<usize> {
+    fn chunk_index_by_type(&self, chunk_type: &PngChunkType) -> Option<usize> {
         let search_predicate = |chunk: &PngChunk| chunk.chunk_type.0 == chunk_type.0;
 
         self.chunks.iter().position(search_predicate)

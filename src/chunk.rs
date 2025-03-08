@@ -105,7 +105,7 @@ impl PngChunk {
         }
     }
 
-    pub fn crc(&self) -> u32 {
+    fn crc(&self) -> u32 {
         let mut hasher = Hasher::new();
 
         hasher.update(&self.chunk_type.bytes());
